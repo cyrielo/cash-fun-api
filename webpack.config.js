@@ -8,8 +8,12 @@ const config = {
   entry: `${appEntry}/index.js`,
   output: {
     path: appOutput,
-    filename: 'bundle.min.js'
+    filename: 'bundle.min.js',
+    libraryTarget: 'commonjs'
   },
+  externals: [
+    /^(?!\.|\/).+/i
+  ],
   module: {
     rules: [
     {
