@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-
+const mongoose = require('mongoose');
 /**
   @class DB
   @desc provides connection configuration to database
@@ -14,11 +13,11 @@ class DB {
   */
   static connect(connectionUri) {
     return new Promise((fufill, reject) => {
-      mongoose.connect(connectionUri);
+      mongoose.connect(connectionUri, { useMongoClient: true });
       const connection = mongoose.connection;
 
-      connection.on('error', () => {
-        reject('Unable to connect to the database');
+      connection.on('error', (error) => {
+        reject(error);
       });
       connection.once('open', () => {
         fufill(true);
