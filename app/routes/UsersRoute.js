@@ -1,4 +1,5 @@
 import express from 'express';
+import Authentication from '../middleware/Authentication';
 import UsersController from './../controllers/UsersController';
 
 /**
@@ -37,8 +38,8 @@ class UsersRoute {
    @desc provide routes to list all users
    */
   getUsers() {
-    this.router.get('/', (req, res) => {
-      this.UsersController.getUsers()
+    this.router.get('/', Authentication.authenticate, (req, res) => {
+      this.UsersController.getUsers(req)
         .then((response) => {
           res.status(response.status).json(response);
         })
