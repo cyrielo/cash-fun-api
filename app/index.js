@@ -2,12 +2,12 @@ import express from 'express';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import DB from './config/DB';
-import config from './config/config.json';
+import config from './config';
 import BaseRouter from './routes';
+
 dotenv.config();
 
-
-DB.connect('mongodb://localhost:27017/cashfun')
+DB.connect(config.mongodb_uri)
 .then(() => {
   const app = express();
   const router = express.Router();
@@ -15,8 +15,8 @@ DB.connect('mongodb://localhost:27017/cashfun')
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
   app.use(`/api/${config.version.name}/`, baseRouter.routes());
-  app.listen(process.env.PORT, () => {
-    console.log('Application started on port', process.env.PORT);
+  app.listen(config.port, () => {
+    console.log('Application started on port', config.port);
   });
 
 })
