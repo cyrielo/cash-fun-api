@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import UsersSchema from '../schema/UsersSchema';
 import Validation from '../helpers/Validation';
+import config from '../config';
 
 /**
   * @class UsersModel
@@ -49,7 +51,9 @@ class UsersModel {
           fulfill({
             status: 201,
             message: 'User created successfully',
-            data:{ user_id: user._id}
+            data: {
+              user_id: user._id, 
+              token: jwt.sign(user, config.auth_secret, { expiresIn: '24h'})}
           });
         })
         .catch((error) => {
