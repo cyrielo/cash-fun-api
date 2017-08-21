@@ -5,6 +5,18 @@ class UsersController {
     this.UsersModel = new UsersModel();
   }
 
+  login(req) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.login(req)
+      .then((response) => {
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });   
+  }
+
   addUser(req) {
     return new Promise((fulfill, reject) => {
       
@@ -15,6 +27,19 @@ class UsersController {
         .catch((error) => {
           reject(error);
         });
+    });
+  }
+
+  getUsers(req) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.getUsers(req)
+      .then((response) => {
+        console.log('Got here', response);
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
     });
   }
 

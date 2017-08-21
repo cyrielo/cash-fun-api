@@ -30,7 +30,20 @@ class UsersRoute {
     this.searchUser(); // searching for existing users
     this.updateUser(); // a route to handle updating user details
     this.getPaginatedUsers(); // a route to get users in pages
+    this.login(); // a route to authenticate a user and get a new token
     return this.router;
+  }
+
+  login() {
+     this.router.post('/login', (req, res) => {
+      this.UsersController.login(req)
+        .then((response) => {
+          res.status(response.status).json(response);
+        })
+        .catch((error) => {
+          res.status(error.status).json(error);
+        });
+    });   
   }
 
   /**

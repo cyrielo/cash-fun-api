@@ -15,6 +15,62 @@ class UsersModel {
     this.UsersModel =  mongoose.model('users', UsersSchema);
   }
 
+  /**
+    * @methid login
+    * @param {Object}
+    * @desc verifies that the account with certain credentials exists
+    * @return {Promise} a promise object
+  */
+  login(req) {
+    return new Promise((fulfill, reject) => {
+      const email = req.body.email;
+      const password = req.body.password;
+
+      if(!email || !password) {
+        reject({
+          status: 400,
+          message: 'Email and password is required!'
+        });
+      }
+      this.UsersModel.findOne({
+        email
+      })
+      .then((user) => {
+        bcrypt.compare(password, user.password)
+        .then((passwordMatch) => {
+          if(passwordMatch) {
+           user['password'] = undefined; // concealling the password hash
+            fulfill({
+              status: 200,
+              message: 'Login successful',
+              data: {
+                token: jwt.sign(user, config.auth_secret, { expiresIn:'24h' })
+              }
+            });            
+          } else {
+            reject({
+              status: 400,
+              message: 'Invalid email and password combination!'
+            });            
+          }
+        });
+      })
+      .catch((error) => {
+        reject({
+          status: 400,
+          message: 'Invalid email and password combination'
+        })
+      });
+    });
+  }
+
+  /**
+    * @method addUser
+    * @param {Object} req
+    * @desc this creates a unique user in the database
+    * @return {Promise} a promise object
+    *
+  */
   addUser(req) {
     return new Promise((fulfill, reject) => {
 
@@ -72,6 +128,32 @@ class UsersModel {
           data: errors
         });
       }
+    });
+  }
+
+  /**
+    * @method getUsers
+    * @param {Object} req
+    * @desc get users in the system
+    * @return {Promise} a promise object
+  */
+  getUsers(req) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.find()
+      .then((users) => {
+        fulfill({
+          status: 200,
+          message: 'users listed',
+          data: users
+        })
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          message: 'An error occured!',
+          data: error
+        });
+      });
     });
   }
 
