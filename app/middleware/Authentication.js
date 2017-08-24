@@ -8,8 +8,8 @@ class Authentication {
 
       if(strategy.toLowerCase() === 'bearer') {
         try {
-          const token = authorization[1]
-          jwt.verify(token, config.auth_secret);
+          const token = authorization[1];
+          res.locals.user = jwt.verify(token, config.auth_secret);
           next();
         }
         catch(error) {
