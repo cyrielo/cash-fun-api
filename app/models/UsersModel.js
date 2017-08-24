@@ -39,13 +39,17 @@ class UsersModel {
         bcrypt.compare(password, user.password)
         .then((passwordMatch) => {
           if(passwordMatch) {
-           user['password'] = undefined; // concealling the password hash
-            fulfill({
-              status: 200,
-              message: 'Login successful',
-              data: {
-                token: jwt.sign(user, config.auth_secret, { expiresIn:'24h' })
-              }
+           const userPayload = {
+            username: user.username,
+            id: user._id,
+            fullname: user.fullname
+           };
+           fulfill({
+            status: 200,
+            message: 'Login successful',
+            data: {
+              token: jwt.sign(userPayload, config.auth_secret, { expiresIn:'24h' })
+            }
             });            
           } else {
             reject({
