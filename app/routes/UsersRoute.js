@@ -26,11 +26,11 @@ class UsersRoute {
   loadRoutes() {
     this.getUsers(); // fetching user route
     this.addUser(); // adding new user route
-    this.removeUser(); // removing user route
-    this.searchUser(); // searching for existing users
-    this.updateUser(); // a route to handle updating user details
-    this.getPaginatedUsers(); // a route to get users in pages
+    this.remove(); // removing user route
+    this.update(); // a route to handle updating user details
     this.login(); // a route to authenticate a user and get a new token
+    this.updatePassword(); //a route for updating the user's password
+    this.updateEmail(); // a route to update the user's email address
     return this.router;
   }
 
@@ -82,9 +82,9 @@ class UsersRoute {
    @method updateUser
    @desc provide a route to update user details
    */
-  updateUser() {
-    this.router.patch('/:id', (req, res) => {
-      this.UsersController.updateUser(req)
+  update() {
+    this.router.put('/', Authentication.authenticate, (req, res) => {
+      this.UsersController.update(req, res)
         .then((response) => {
           res.status(response.status).json(response);
         })
@@ -92,47 +92,47 @@ class UsersRoute {
           res.status(error.status).json(error);
         });
     });
+  }
+
+  /**
+    * @method updatePassword
+    * @desc a route for users to update their password
+  */
+  updatePassword() {
+    this.router.put('/password', Authentication.authenticate, (req, res) => {
+      this.UsersController.updatePassword(req, res)
+        .then((response) => {
+          res.status(response.status).json(response);
+        })
+        .catch((error) => {
+          res.status(error.status).json(error);
+        });
+    });    
+  }
+
+  /**
+    * @method updateEmail
+    * @desc a route for users to update their email address
+  */
+  updateEmail() {
+    this.router.put('/email', Authentication.authenticate, (req, res) => {
+      this.UsersController.updateEmail(req, res)
+        .then((response) => {
+          res.status(response.status).json(response);
+        })
+        .catch((error) => {
+          res.status(error.status).json(error);
+        });
+    });    
   }
 
   /**
    @method removeUser
    @desc provides a route to remove a user
    */
-  removeUser() {
-    this.router.delete('/:id', (req, res) => {
-      this.UsersController.removeUser(req)
-        .then((response) => {
-          res.status(response.status).json(response);
-        })
-        .catch((error) => {
-          res.status(error.status).json(error);
-        });
-    });
-  }
-
-  /**
-   @method getPaginatedUsers
-   @desc provide a route to get paginated users
-   */
-  getPaginatedUsers() {
-    this.router.get('/filter', (req, res) => {
-      this.UsersController.getPaginatedUsers(req)
-        .then((response) => {
-          res.status(response.status).json(response);
-        })
-        .catch((error) => {
-          res.status(error.status).json(error);
-        });
-    });
-  }
-
-  /**
-   @method searchUser
-   @desc provide a route to search for users
-   */
-  searchUser() {
-    this.router.get('/search/:term', (req, res) => {
-      this.UsersController.searchUser(req)
+  remove() {
+    this.router.delete('/', Authentication.authenticate, (req, res) => {
+      this.UsersController.remove(req, res)
         .then((response) => {
           res.status(response.status).json(response);
         })

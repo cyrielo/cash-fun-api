@@ -161,6 +161,176 @@ class UsersModel {
     });
   }
 
+  /**
+    @method update
+    @param {Object} req
+    @param {Object} res
+    @desc provide ability to update basic user profile details
+    @return {Promise} a promise object
+  */
+  update(req, res) {
+    return new Promise((fulfill, reject) => {
+      const uid = res.locals.user.id;
+      const fullname = req.body.fullname;
+      const username = req.body.username;
+      const bio = req.body.bio;
+      const gender = req.body.gender;
+      const phone = req.body.phone;
+      const update = {};
+
+
+      if(fullname && fullname.trim().length > 0) {
+        update.fullname = fullname;
+      }
+
+      if(username && username.trim().length > 0) {
+        update.username = username;
+      }
+
+      if(bio && bio.trim().length > 0) {
+        update.bio = bio;
+      }
+
+      if(gender && gender.trim().length > 0) {
+        update.gender = gender;
+      }
+
+      if(phone && phone.trim().length > 0) {
+        update.phone = phone;
+      }
+
+      this.UsersModel.findByIdAndUpdate(uid, update)
+      .then((user) => {
+        fulfill({
+          status: 200,
+          message: 'User updated',
+          data: Object.assign(user, update)
+        });
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          error
+        })
+      });
+
+    });
+  }
+
+  updatePassword(req, res) {
+    return new Promise((fulfill, reject) => {
+
+      const uid = res.locals.user.id;
+      const oldPassword = req.body.oldPassword;
+      const newPassword = req.body.newPassword;
+      const confirmPassword = req.body.confirmPassword;
+
+      this.UsersModel.findById(uid)
+      .then((user) => {
+        bcrypt.compare(oldPassword, user.password)
+        .then((passwordMatch) => {
+          if(passwordMatch){
+            if(newPassword === confirmPassword) {
+              bcrypt.hash(newPassword, 10)
+              .then((hash) => {
+                this.UsersModel.findByIdAndUpdate(uid, { password: hash })
+                .then(() => {
+                  fulfill({
+                    status: 200,
+                    message: 'Password updated successfully!'
+                  });
+                })
+                .catch((error) => {
+                  reject({
+                    status: 500,
+                    message: 'Unable to update model',
+                    error
+                  });
+                });
+              })
+              .catch((error) => {
+                reject({
+                  status: 500,
+                  message: 'Unable to process password change'
+                });
+              });
+            }else {
+              reject({
+                status: 400,
+                message: 'Your new password do not match'
+              });
+            }
+          } else {
+            reject({
+              status: 403,
+              message: 'Old password is incorrect, access denied!'
+            })
+          }
+        })
+        .catch(() => {
+          reject({
+            status: 500,
+            message: 'bcrypt error'
+          })
+        });
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          error
+        });
+      });
+
+    });
+  }
+
+  updateEmail(req, res) {
+    return new Promise((fulfill, reject) => {
+      const uid = res.locals.user.id;
+      const newEmail = req.body.email;
+      this.UsersModel.findById(uid)
+      .then((user) => {
+        if(newEmail !== user.email) {
+          // TODO send an email to the user
+          fulfill({
+            status: 200,
+            message: 'Activation code has been sent to your new email!'
+          })
+        } else {
+          reject({
+            status: 400,
+            message: 'New email is same as old'
+          })
+        }
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          error
+        });
+      });
+    });
+  }
+
+  remove(req, res) {
+    return new Promise((fulfill, reject) => {
+      const uid = res.locals.user.id;
+      this.UsersModel.remove({ _id : uid })
+      .then(() => {
+        fulfill({
+          status: 200,
+          message: 'Your account has been deleted!'
+        });
+      })
+      .catch(() => {
+        reject({
+          status: 500,
+          message: 'Unable to delete account!'
+        })
+      });
+    });
+  }
+
 }
 
 export default UsersModel;

@@ -34,7 +34,54 @@ class UsersController {
     return new Promise((fulfill, reject) => {
       this.UsersModel.getUsers(req)
       .then((response) => {
-        console.log('Got here', response);
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });
+  }
+
+  update(req, res) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.update(req, res)
+      .then((response) => {
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });
+  }
+
+  updatePassword(req, res) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.updatePassword(req, res)
+      .then((response) => {
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });
+  }
+
+  updateEmail(req, res) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.updateEmail(req, res)
+      .then((response) => {
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });
+  }
+
+  remove(req, res) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.remove(req, res)
+      .then((response) => {
         fulfill(response);
       })
       .catch((error) => {
