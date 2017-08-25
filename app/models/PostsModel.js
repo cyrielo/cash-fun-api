@@ -4,10 +4,12 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 import PostsSchema from '../schema/PostsSchema';
+import UsersModel from '../models/UsersModel';
 
 class PostsModel {
   constructor() {
     this.PostsModel = mongoose.model('posts', PostsSchema);
+    this.UsersModel = new UsersModel();
   }
 
   /**
@@ -102,22 +104,12 @@ class PostsModel {
   view(req, res) {
     return new Promise((fulfill, reject) => {
       const postId = req.query.id || undefined;
-      const uid = req.query.user || res.locals.user.id;
+      const user = req.query.user || res.locals.user.username;
       const page = req.query.page || undefined;
       const limit = parseInt(req.query.limit) || 10;
-      let findBy = {};
 
       if(postId) {
-        findBy = { _id : postId };
-      } else {
-        findBy = {uid};
-      }
-
-      if(page) {
-        console.log('The limit is', limit);
-        this.PostsModel.find(findBy)
-        .skip(page * limit)
-        .limit(limit)
+        this.PostsModel.findById(postId)
         .then((posts) => {
           fulfill({
             status: 200,
@@ -132,20 +124,26 @@ class PostsModel {
           });
         });
       } else {
-        this.PostsModel.find(findBy)
-        .then((posts) => {
-          console.log('Found posts', posts);
-          fulfill({
-            status: 200,
-            message: 'All posts listed!',
-            data: posts
-          });
-        })
-        .catch((error) => {
-          reject({
-            status: 500,
-            error
-          });
+        const a = { query: { user } };
+        this.UsersModel.getUsers(a)
+        .then((response) => {
+          const userId = response.data._id;
+          this.PostsModel.find({ uid: userId })
+          .skip(page * limit)
+          .limit(limit)
+          .then((posts) => {
+            fulfill({
+              status: 200,
+              message: 'All posts listed!',
+              data: posts
+            });
+          })
+          .catch((error) => {
+            reject({
+              status: 500,
+              error
+            });
+          });          
         });
       }
     });
