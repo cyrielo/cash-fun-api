@@ -97,32 +97,34 @@ class UsersModel {
       }
 
       if(Object.keys(errors).length < 1) {
-        // no errors     
-        const newUser  = {
-          fullname,
-          username,
-          email,
-          password: bcrypt.hashSync(password, 10)
-        };
-
-        const User = new this.UsersModel(newUser);
-        User.save()
-        .then((user) => {
-          fulfill({
-            status: 201,
-            message: 'User created successfully',
-            data: {
-              user_id: user._id, 
-              token: jwt.sign(user, config.auth_secret, { expiresIn: '24h'})}
-          });
-        })
-        .catch((error) => {
-          const errorMsg = Validation.resolveMongooseErrorMsg(error);
-          reject({
-            status: 400,
-            message: 'You have errors in the submitted form',
-            data: errorMsg
-          });
+        // no errors
+        bcrypt.hash(password, 10)
+        .then((hash) => {
+          const newUser  = {
+            fullname,
+            username,
+            email,
+            password: hash
+          };
+          const User = new this.UsersModel(newUser);
+          User.save()
+          .then((user) => {
+            fulfill({
+              status: 201,
+              message: 'User created successfully',
+              data: {
+                user_id: user._id, 
+                token: jwt.sign(user, config.auth_secret, { expiresIn: '24h'})}
+            });
+          })
+          .catch((error) => {
+            const errorMsg = Validation.resolveMongooseErrorMsg(error);
+            reject({
+              status: 400,
+              message: 'You have errors in the submitted form',
+              data: errorMsg
+            });
+          });          
         });
       } 
       else {
