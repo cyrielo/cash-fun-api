@@ -1,4 +1,6 @@
 import UsersRoute from './UsersRoute';
+import PostsRoute from './PostsRoute';
+
 /**
  @class BaseRoute
  @desc Initialize all routes in the application
@@ -11,6 +13,7 @@ class BaseRoute {
   constructor(router) {
     this.router = router;
     this.UsersRoute = new UsersRoute();
+    this.PostsRoute = new PostsRoute();
   }
 
   /**
@@ -20,6 +23,7 @@ class BaseRoute {
    */
   routes() {
     this.router.use('/users', this.UsersRoute.loadRoutes());
+    this.router.use('/posts', this.PostsRoute.loadRoutes());
     this.router.use('/', (req, res) => {
       res.status(200).send('Api root!');
     });
