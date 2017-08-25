@@ -145,21 +145,66 @@ class UsersModel {
   */
   getUsers(req) {
     return new Promise((fulfill, reject) => {
-      this.UsersModel.find()
-      .then((users) => {
-        fulfill({
-          status: 200,
-          message: 'users listed',
-          data: users
+      const username = req.query.user;
+      const page = req.query.page;
+      const limit = parseInt(req.query.limit) || 10;
+
+      let findBy = {};
+
+      if(username) {
+        findBy = { username };
+      }
+
+      if(username) {
+        this.UsersModel.findOne({ username })
+        .then((user) => {
+          fulfill({
+            status: 200,
+            message: 'User found!',
+            data: user
+          });
         })
-      })
-      .catch((error) => {
-        reject({
-          status: 500,
-          message: 'An error occured!',
-          data: error
+        .catch((error) => {
+          reject({
+            status: 500,
+            error
+          });
         });
-      });
+      } else if(page) {
+        this.UsersModel.find()
+        .skip(page * limit)
+        .limit(limit)
+        .then((users) => {
+          fulfill({
+            status: 200,
+            message: 'paginated users listed',
+            data: users
+          });
+        })
+        .catch((error) => {
+          reject({
+            status: 500,
+            message: 'An error occured!',
+            data: error
+          });
+        });
+      } else {
+        this.UsersModel.find()
+        .then((users) => {
+          fulfill({
+            status: 200,
+            message: 'all users listed',
+            data: users
+          });
+        })
+        .catch((error) => {
+          reject({
+            status: 500,
+            message: 'An error occured!',
+            data: error
+          });
+        });        
+      }
     });
   }
 
