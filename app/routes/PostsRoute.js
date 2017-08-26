@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 import path from 'path';
 import MediaHelper from '../helpers/MediaHelper';
 import Authentication from '../middleware/Authentication';
@@ -7,17 +6,9 @@ import PostsController from '../controllers/PostsController';
 
 class PostsRoute {
   constructor() {
-    const dest = 'uploads/';
     this.PostsController = new PostsController();
     this.router = express.Router();
-    this.uploader = multer({ dest, fileFilter: function(req, file, cb) {
-      const mimetype = file.mimetype;
-      if(MediaHelper.isAllowedFile(mimetype)) {
-        cb(null, true);
-      } else {
-        cb(null, false);
-      }
-    }});
+    this.uploader = MediaHelper.setupUploader();
   }
 
   loadRoutes() {
