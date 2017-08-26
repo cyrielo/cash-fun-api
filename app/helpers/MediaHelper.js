@@ -1,3 +1,5 @@
+import multer from 'multer';
+
 class MediaHelper {
 
   /**
@@ -23,6 +25,19 @@ class MediaHelper {
     const fileExtension =  mimetype.split('/')[1];
 
     return (allowedFiles.indexOf(fileExtension) >= 0);
+  }
+
+  static setupUploader() {
+    const dest = 'uploads/';
+    const uploader = multer({ dest, fileFilter: function(req, file, cb) {
+      const mimetype = file.mimetype;
+      if(MediaHelper.isAllowedFile(mimetype)) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    }});
+    return uploader;
   }
 }
 
