@@ -1,4 +1,5 @@
 import express from 'express';
+import MediaHelper from '../helpers/MediaHelper';
 import Authentication from '../middleware/Authentication';
 import UsersController from './../controllers/UsersController';
 
@@ -16,6 +17,7 @@ class UsersRoute {
   constructor() {
     this.UsersController = new UsersController();
     this.router = express.Router();
+    this.uploader = MediaHelper.setupUploader();
   }
 
   /**
@@ -31,6 +33,7 @@ class UsersRoute {
     this.login(); // a route to authenticate a user and get a new token
     this.updatePassword(); //a route for updating the user's password
     this.updateEmail(); // a route to update the user's email address
+    this.updateAvatar(); // update the user's avatar
     return this.router;
   }
 
@@ -117,6 +120,23 @@ class UsersRoute {
   updateEmail() {
     this.router.put('/email', Authentication.authenticate, (req, res) => {
       this.UsersController.updateEmail(req, res)
+        .then((response) => {
+          res.status(response.status).json(response);
+        })
+        .catch((error) => {
+          res.status(error.status).json(error);
+        });
+    });    
+  }
+
+  /**
+    * @method updateAvatar
+    * @desc a route for users to update profile picture
+  */
+  updateAvatar() {
+    this.router.put('/avatar', Authentication.authenticate, 
+      this.uploader.any(), (req, res) => {
+      this.UsersController.updateAvatar(req, res)
         .then((response) => {
           res.status(response.status).json(response);
         })

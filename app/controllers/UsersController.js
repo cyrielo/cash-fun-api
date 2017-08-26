@@ -78,6 +78,18 @@ class UsersController {
     });
   }
 
+  updateAvatar(req, res) {
+    return new Promise((fulfill, reject) => {
+      this.UsersModel.updateAvatar(req, res)
+      .then((response) => {
+        fulfill(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    });    
+  }
+
   remove(req, res) {
     return new Promise((fulfill, reject) => {
       this.UsersModel.remove(req, res)

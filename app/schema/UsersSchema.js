@@ -11,6 +11,10 @@ const UsersSchema = new Schema({
     default: ''
   },
 
+  photo: {
+    type: String
+  },
+  
   username: {
     type: String,
     validate: [{

@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import cloudinary from 'cloudinary';
 import UsersSchema from '../schema/UsersSchema';
 import Validation from '../helpers/Validation';
 import config from '../config';
@@ -356,6 +358,54 @@ class UsersModel {
           error
         });
       });
+    });
+  }
+
+  updateAvatar(req, res) {
+    return new Promise((fulfill, reject) => {
+      const uid = res.locals.user.id;
+      const photo = (req.files) ? req.files[0] : undefined;
+
+      if(photo) {
+        const fileExtension =  photo.mimetype.split('/')[1];
+        const img = ['jpg', 'jpeg', 'png'];
+        if(img.indexOf(fileExtension) >= 0) {
+
+          let currentTime = new Date().getTime();
+
+          let newFileName = 
+          `${photo.destination + uid + '.' + currentTime + '.' + fileExtension}`;
+          fs.renameSync(photo.path, newFileName);
+          cloudinary.uploader.upload(newFileName, (result) => {
+            fs.unlinkSync(newFileName);
+            let update = { photo: result.secure_url };
+            this.UsersModel.findByIdAndUpdate(uid, update)
+            .then((user) => {
+              fulfill({
+                status: 200,
+                message: 'Profile picture updated!',
+                data: Object.assign(user, update)
+              })
+              .catch((error) => {
+                reject({
+                  status: 500,
+                  error
+                });
+              })
+            })
+          });
+        } else {
+          reject({
+            status: 400,
+            message: 'You can only use an image as an avatar'
+          })
+        }
+      } else {
+        reject({
+          status: 400,
+          message: 'No image selected!'
+        })
+      }
     });
   }
 
