@@ -5,11 +5,14 @@ import jwt from 'jsonwebtoken';
 import config from '../config';
 import PostsSchema from '../schema/PostsSchema';
 import UsersModel from '../models/UsersModel';
+import HashTagHelper from '../helpers/HashTagHelper';
+import HashTagModel from '../models/HashTagModel';
 
 class PostsModel {
   constructor() {
     this.PostsModel = mongoose.model('posts', PostsSchema);
     this.UsersModel = new UsersModel();
+    this.HashTagModel = new HashTagModel();
   }
 
   /**
@@ -36,7 +39,7 @@ class PostsModel {
         if(caption.trim().length < 1) {
           errors.caption = 'Caption is empty';
         } else {
-          newPost.caption = caption;
+          newPost.caption = caption.trim();
         }
       }
 
@@ -44,7 +47,7 @@ class PostsModel {
         if(description.trim().length < 1) {
           errors.description = 'description is empty';
         } else {
-          newPost.description = description;
+          newPost.description = description.trim();
         }        
       }
 
@@ -73,17 +76,36 @@ class PostsModel {
             if(counter === media.length) {
               const NewPost = new this.PostsModel(newPost);
               NewPost.save()
-              .then(() => {
-               fulfill({
-                  status: 201,
-                  message: 'Post submitted!',
-                  data: newPost
+              .then((savedPost) => {
+                let postContent = (caption) ? caption.trim() : ''; 
+                postContent += (description) ? ' '+ description.trim() : '';
+                const hashtagsInfos = [];
+                const hashtags = HashTagHelper.getHashTag(postContent);
+
+                hashtags.forEach((title) => {
+                  hashtagsInfos.push({ title, post_id: savedPost._id });
                 });
+                this.HashTagModel.saveMultiple(hashtagsInfos)
+                .then(() => {
+                  fulfill({
+                    status: 201,
+                    message: 'Post submitted!',
+                    data: newPost
+                  }); 
+                })
+                .catch(() => {
+                  reject({
+                    status: 400,
+                    message: 'Error unable to save hashtags!',
+                    data: errors
+                  });
+                });
+
               })
               .catch((errors) => {
                 reject({
                   status: 400,
-                  message: 'You have an error in your post',
+                  message: 'Error saving post, you have an error in your post',
                   data: errors
                 });
               });
