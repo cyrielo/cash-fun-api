@@ -192,6 +192,37 @@ class HashTagModel {
   }
 
   /**
+    * @method saveMultiple
+    * @param {Object} hashtags
+    * @desc automatically calls the save method to calculate total post while 
+    * saving new hastags
+    * @return {Promise} a promise object
+  */
+  saveMultiple(hashtags) {
+    return new Promise((fulfill, reject) => {
+      let cursor = hashtags.length - 1;
+      const multipleSave = () => {
+        this.save(hashtags[cursor].title, hashtags[cursor].post_id)
+        .then(() => {
+          cursor--;
+          if(cursor === -1) {
+            fulfill({
+              status: 201,
+              message: 'Saved multiple hashtags!'
+            });
+          } else {
+            multipleSave();
+          }
+        })
+        .catch((error) => {
+          reject(error)
+        });
+      };
+      multipleSave();
+    });
+  }
+
+  /**
     * @method exists
     * @param {String} title
     * @desc asserts if an the specified hashtag title exists
