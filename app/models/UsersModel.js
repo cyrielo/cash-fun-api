@@ -428,6 +428,57 @@ class UsersModel {
     });
   }
 
+  /**
+    * @method search
+    * @param {Object} userObject
+    * @desc allows you search for a user based on username or fullname or email
+    * @return {Promise} a promise object
+  */
+  search(userObject) {
+    return new Promise((fulfill, reject) => {
+      const { username, fullname, email } = userObject;
+      const pattern = { $or: []};
+
+      if(username) {
+        let u = { $regex: new RegExp(username, 'ig') };
+        pattern['$or'].push({ username: u  });
+      }
+
+      if(fullname) {
+        let f = { $regex: new RegExp(fullname, 'ig') };
+        pattern['$or'].push({ fullname: f  });
+      }
+
+      if(email) {
+        let e = { $regex: new RegExp(email, 'ig') };
+        pattern['$or'].push({ email: e  });
+      }
+
+      this.UsersModel.find(pattern)
+      .then((result) => {
+        if(result.length) {
+          fulfill({
+            status: 200,
+            message: 'Search results found:',
+            data: result
+          });
+        } else {
+          reject({
+            status: 404,
+            message: 'Search result not found!'
+          })
+        }
+
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          error
+        });
+      })
+    });
+  }
+
 }
 
 export default UsersModel;
