@@ -123,6 +123,13 @@ class PostsModel {
     });
   }
 
+  /**
+    * @method view
+    * @param {Object} req
+    * @param {Object} res
+    * @desc view posts
+    * @return {Promise} a promise object
+  */
   view(req, res) {
     return new Promise((fulfill, reject) => {
       const postId = req.query.id || undefined;
@@ -171,6 +178,13 @@ class PostsModel {
     });
   }
 
+  /**
+    * @method update
+    * @param {Object} req
+    * @param {Object} res
+    * @desc update a post
+    * @return {Promise} a promise object
+  */
   update(req, res) {
     return new Promise((fulfill, reject) => {
       const postId = (req.body.id || req.query.id) || undefined;
@@ -234,6 +248,13 @@ class PostsModel {
     });
   }
 
+  /**
+    * @method remove
+    * @param {Object} req
+    * @param {Object} res
+    * @desc remove a specific
+    * @return {Promise} a promise object
+  */
   remove(req, res) {
     return new Promise((fulfill, reject) => {
       const _id = req.query.id;
@@ -264,6 +285,64 @@ class PostsModel {
       .catch((error) => {
         reject({
           status: 500,
+          error
+        });
+      });
+    });
+  }
+
+  /**
+    * @method search
+    * @param {Object} req
+    * @desc searches the Hastag collection and gets their postids and return 
+    * the posts
+    * @return {Promise} a promise object
+  */
+  search(req, hashtag) {
+    return new Promise((fulfill, reject) => {
+      const limit = parseInt(req.query.limit) || 5;
+      const page = parseInt(req.query.page) || 0;
+
+      this.HashTagModel.search(hashtag)
+      .then((response) => {
+        const hashtags = response.data;
+
+        if(hashtags) {
+          const post_ids = hashtags.post_ids;
+          const pattern = { $or: []};
+          post_ids.forEach((postId) => {
+            pattern['$or'].push({ _id: postId } );
+          });
+          this.PostsModel.find(pattern)
+          .skip(page * limit)
+          .limit(limit)
+          .then((result) => {
+            if(result.length) {
+              fulfill({
+                status: 200,
+                data: result
+              });              
+            } else {
+              reject({
+                status: 404,
+                message: 'No posts found!'
+              })
+            }
+          })
+          .catch((error) => {
+            reject(error);
+          });          
+        } else {
+          reject({
+            status: 404,
+            message: 'No posts found!'
+          })
+        }
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          message: 'Something went wrong',
           error
         });
       });
