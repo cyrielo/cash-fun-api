@@ -434,8 +434,11 @@ class UsersModel {
     * @desc allows you search for a user based on username or fullname or email
     * @return {Promise} a promise object
   */
-  search(userObject) {
+  search(req, userObject) {
     return new Promise((fulfill, reject) => {
+      const limit = parseInt(req.query.limit) || 5;
+      const page = parseInt(req.query.page) || 0;
+
       const { username, fullname, email } = userObject;
       const pattern = { $or: []};
 
@@ -455,6 +458,8 @@ class UsersModel {
       }
 
       this.UsersModel.find(pattern)
+      .skip(page * limit)
+      .limit(limit)
       .then((result) => {
         if(result.length) {
           fulfill({
@@ -468,7 +473,6 @@ class UsersModel {
             message: 'Search result not found!'
           })
         }
-
       })
       .catch((error) => {
         reject({
