@@ -1,5 +1,6 @@
 import UsersRoute from './UsersRoute';
 import PostsRoute from './PostsRoute';
+import SearchRoute from './SearchRoute';
 
 /**
  @class BaseRoute
@@ -14,6 +15,7 @@ class BaseRoute {
     this.router = router;
     this.UsersRoute = new UsersRoute();
     this.PostsRoute = new PostsRoute();
+    this.SearchRoute = new SearchRoute();
   }
 
   /**
@@ -24,6 +26,7 @@ class BaseRoute {
   routes() {
     this.router.use('/users', this.UsersRoute.loadRoutes());
     this.router.use('/posts', this.PostsRoute.loadRoutes());
+    this.router.use('/search', this.SearchRoute.loadRoutes());
     this.router.use('/', (req, res) => {
       res.status(200).send('Api root!');
     });
