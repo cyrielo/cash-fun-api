@@ -14,7 +14,7 @@ class HashTagModel {
   */
   search(title) {
     return new Promise((fulfill, reject) => {
-      this.HashTagModel.find({
+      this.HashTagModel.findOne({
         title: { $regex: new RegExp(title, 'ig') }
       })
       .then((result) => {
@@ -22,6 +22,41 @@ class HashTagModel {
           status: 200,
           data: result
         });
+      })
+      .catch((error) => {
+        reject({
+          status: 500,
+          error
+        });
+      })
+    });
+  }
+
+  /**
+    * @method searchSuggest
+    * @param {String} title
+    * @desc provides ability to suggest search for hashtags
+    * @return {Promise} a promise object
+  */
+  searchSuggest(title) {
+    return new Promise((fulfill, reject) => {
+      this.HashTagModel.find({
+        title: { $regex: new RegExp(title, 'ig') }
+      })
+      .select('title')
+      .limit(5)
+      .then((result) => {
+        if(result.length) {
+          fulfill({
+            status: 200,
+            data: result
+          });          
+        } else {
+          reject({
+            status: 404,
+            message: 'No result found!'
+          });
+        }
       })
       .catch((error) => {
         reject({
@@ -150,7 +185,7 @@ class HashTagModel {
             status: 201,
             message: 'Hashtag saved',
             data: tag
-          })
+          });
         })
         .catch((error) => {
           reject({
