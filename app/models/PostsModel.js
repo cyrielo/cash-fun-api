@@ -57,7 +57,7 @@ class PostsModel {
       // a counter to ensure media have been uploaded before ending the request
       let counter = 1;
       if (Object.keys(errors).length < 1) {
-        media.forEach((file, index) => {
+        media.forEach((file) => {
           let currentTime = new Date().getTime();
           let newFileName = `${file.destination + uid + '.' + currentTime}.jpg`;
           fs.renameSync(file.path, newFileName);

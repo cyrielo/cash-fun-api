@@ -134,7 +134,7 @@ class HashTagModel {
       let cursor = post_ids.length - 1;
       let cursor2 = hashtags.length - 1;
       const d = () => {
-        let c = () => {
+        const c = () => {
           this.deletePost(hashtags[cursor2], post_ids[cursor])
           .then(() => {
             cursor2 -= 1;
@@ -172,9 +172,9 @@ class HashTagModel {
       const orderBy = req.query.order_by;
       const order = req.query.order;
 
-      switch(orderBy) {
+      switch (orderBy) {
         case 'posts':
-          let direction = (order === 'asc') ? -1 : 1;
+          const direction = (order === 'asc') ? -1 : 1;
           this.HashTagModel.find()
           .sort({ total_posts: direction })
           .then((hashtags) => {
@@ -182,15 +182,16 @@ class HashTagModel {
               status: 200,
               message: 'Hastags listed!',
               data: hashtags
-            })
+            });
           })
           .catch((error) => {
             reject({
               status: 500,
               error
-            })
+            });
           });
         break;
+
         default:
           this.HashTagModel.find()
           .then((hashtags) => {
@@ -205,7 +206,7 @@ class HashTagModel {
               status: 500,
               error,
               message: 'Unable to list hashtags!'
-            })
+            });
           });
       }
     });
@@ -239,15 +240,15 @@ class HashTagModel {
           reject({
             status: 500,
             error
-          })
+          });
         });
       })
       .then((tag) => {
         const post_ids = tag.post_ids;
-        if(post_ids.indexOf(id) < 0) {
+        if (post_ids.indexOf(id) < 0) {
           post_ids.push(id);
-          this.HashTagModel.update({title}, {
-            post_ids, 
+          this.HashTagModel.update({ title }, {
+            post_ids,
             total_posts: post_ids.length
           })
           .then((oldTag) => {
@@ -255,13 +256,13 @@ class HashTagModel {
               status: 201,
               message: 'Hashtag saved',
               data: Object.assign(oldTag, { post_ids })
-            })
+            });
           })
           .catch((error) => {
             reject({
               status: 500,
               error
-            })
+            });
           });
         } else {
           fulfill({
@@ -269,7 +270,7 @@ class HashTagModel {
             message: 'Already saved hashtag!'
           });
         }
-      });      
+      });
     });
   }
 
@@ -319,10 +320,10 @@ class HashTagModel {
   */
   exists(title) {
     return new Promise((fulfill, reject) => {
-      this.HashTagModel.findOne({title})
+      this.HashTagModel.findOne({ title })
       .then((result) => {
-        if(result !== null) {
-           fulfill(result);
+        if (result !== null) {
+          fulfill(result);
         } else {
           reject('');
         }
