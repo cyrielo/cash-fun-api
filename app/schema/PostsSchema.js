@@ -10,11 +10,13 @@ const PostsSchema = new Schema({
 
   caption: {
     type: String,
-    maxlength: [100, 'Caption is too long']
+    maxlength: [100, 'Caption is too long'],
+    default: ''
   },
 
   description: {
-    type: String
+    type: String,
+    default: ''
   },
 
   uid: {
