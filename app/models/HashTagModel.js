@@ -28,7 +28,7 @@ class HashTagModel {
           status: 500,
           error
         });
-      })
+      });
     });
   }
 
@@ -46,11 +46,11 @@ class HashTagModel {
       .select('title')
       .limit(5)
       .then((result) => {
-        if(result.length) {
+        if (result.length) {
           fulfill({
             status: 200,
             data: result
-          });          
+          });
         } else {
           reject({
             status: 404,
@@ -63,7 +63,7 @@ class HashTagModel {
           status: 500,
           error
         });
-      })
+      });
     });
   }
 
@@ -78,38 +78,86 @@ class HashTagModel {
     return new Promise((fulfill, reject) => {
       this.HashTagModel.findOne({ title })
       .then((hashtag) => {
-        if(hashtag) {
+        if (hashtag) {
           const post_ids = hashtag.post_ids;
           const pos = post_ids.indexOf(post_id);
 
-          post_ids.splice(pos, 1); // delete the post id from array
-
-          const total_posts = post_ids.length
-
-          this.HashTagModel.update({ title }, { post_ids, total_posts })
-          .then(() => {
+          if (pos >= 0) {
+            post_ids.splice(pos, 1); // delete the post id from array
+            const total_posts = post_ids.length;
+            this.HashTagModel.update({ title }, { post_ids, total_posts })
+            .then(() => {
+              fulfill({
+                status: 200,
+                message: 'hashtag details updated!'
+              });
+            })
+            .catch((error) => {
+              reject({
+                status: 500,
+                error
+              });
+            });
+          } else {
             fulfill({
               status: 200,
-              message: 'hashtag details updated!'
-            })
-          })
-          .catch((error) => {
-            reject({
-              status: 500,
-              error
-            })
-          })
+              message: 'Hashtags and post were not associated!'
+            });
+          }
         } else {
           reject({
             status: 404,
-            message: 'Hashtag not found!'
-          })
+            message: 'Unable to delete, hashtag not found!'
+          });
         }
       })
       .catch((error) => {
-        status: 500,
-        error
+        reject({
+          status: 500,
+          error
+        });
       });
+    });
+  }
+
+  /**
+    * @method deleteMultiple
+    * @param {Array} hashtags
+    * @param {Array} post_ids
+    * @desc deasociate specified hashtags from the specified post ids
+    * @return {Promise} a promise object
+  */
+  deleteMultiple(hashtags, post_ids) {
+    return new Promise((fulfill, reject) => {
+      hashtags = Array.from(new Set(hashtags)); // remove duplicate hastags
+
+      let cursor = post_ids.length - 1;
+      let cursor2 = hashtags.length - 1;
+      const d = () => {
+        let c = () => {
+          this.deletePost(hashtags[cursor2], post_ids[cursor])
+          .then(() => {
+            cursor2 -= 1;
+            if (cursor2 >= 0) {
+              c();
+            } else if (cursor > 0) {
+              cursor -= 1;
+              cursor2 = hashtags.length - 1;
+              d();
+            } else {
+              fulfill({
+                status: 200,
+                message: 'Deleted multiple hashtags from posts'
+              });
+            }
+          })
+          .catch((error) => {
+            reject(error);
+          });
+        };
+        c();
+      };
+      d();
     });
   }
 
@@ -223,37 +271,43 @@ class HashTagModel {
         }
       });      
     });
-
   }
 
   /**
     * @method saveMultiple
     * @param {Object} hashtags
-    * @desc automatically calls the save method to calculate total post while 
+    * @desc automatically calls the save method to calculate total post while
     * saving new hastags
     * @return {Promise} a promise object
   */
   saveMultiple(hashtags) {
     return new Promise((fulfill, reject) => {
-      let cursor = hashtags.length - 1;
-      const multipleSave = () => {
-        this.save(hashtags[cursor].title, hashtags[cursor].post_id)
-        .then(() => {
-          cursor--;
-          if(cursor === -1) {
-            fulfill({
-              status: 201,
-              message: 'Saved multiple hashtags!'
-            });
-          } else {
-            multipleSave();
-          }
-        })
-        .catch((error) => {
-          reject(error)
+      if (hashtags.length) {
+        let cursor = hashtags.length - 1;
+        const multipleSave = () => {
+          this.save(hashtags[cursor].title, hashtags[cursor].post_id)
+          .then(() => {
+            cursor -= 1;
+            if (cursor === -1) {
+              fulfill({
+                status: 201,
+                message: 'Saved multiple hashtags!'
+              });
+            } else {
+              multipleSave();
+            }
+          })
+          .catch((error) => {
+            reject(error);
+          });
+        };
+        multipleSave();
+      } else {
+        reject({
+          status: 200,
+          message: 'Nothing to save'
         });
-      };
-      multipleSave();
+      }
     });
   }
 
